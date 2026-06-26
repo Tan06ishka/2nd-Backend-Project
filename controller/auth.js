@@ -1,35 +1,50 @@
 const jwt = require('jsonwebtoken');
-const user = require('../models/user');
+const User = require('../models/user');
 const bcrypt = require('bcrypt');
 
 exports.login = async (req, res) => {
     try {
-        const { email, password } = req.body; 
-        const existingUser = await user.findOne({ where: { email } });
+        const { email, password } = req.body;
 
-        if(!existingUser){  
-            return res.status(400).json({
-                message: "Invalid email or password",
-            });
-        };
-        
-        const isMatch = await bcrypt.compare(password, existingUser.password);
+        const existingUser = await User.findOne({ email });
 
-        if(!isMatch){
+        if (!existingUser) {
             return res.status(400).json({
-                message: "Invalid email or password",
+                message: 'Invalid email or password',
             });
         }
 
-        const token = jwt.sign({ id: existingUser?.id, version: existingUser?.version }, 'Abcde@12345', { expiresIn: '1h' });
+        const isMatch = await bcrypt.compare(
+            password,
+            existingUser.password
+        );
 
-        res.status(200).json({
-            message: "Login successful",
-            token
+        if (!isMatch) {
+            return res.status(400).json({
+                message: 'Invalid email or password',
+            });
+        }
+
+        const token = jwt.sign(
+            {
+                id: existingUser._id,
+                version: existingUser.version || 1,
+            },
+            process.env.JWT_SECRET || 'Abcde@12345',
+            {
+                expiresIn: '1h',
+            }
+        );
+
+        return res.status(200).json({
+            message: 'Login successful',
+            token,
         });
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error"
+        console.error(error);
+
+        return res.status(500).json({
+            message: 'Internal server error',
         });
     }
 };

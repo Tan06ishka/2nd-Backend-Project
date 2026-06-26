@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-
+const User = require('../models/user');
 exports.checkAuth = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
@@ -19,12 +19,15 @@ exports.checkAuth = async (req, res, next) => {
             process.env.JWT_SECRET || 'Abcde@12345'
         );
  
-        const userData = await user.findOne({ where: { id: decoded.id } });
-        if(!userData || userData.version !== decoded.version) {
+        const User = require('../models/user');
+
+        const userData = await User.findById(decoded.id);
+
+        if (!userData) {
             return res.status(401).json({
                 message: 'Invalid or expired token',
             });
-        }
+}
  
         req.user = decoded;
  

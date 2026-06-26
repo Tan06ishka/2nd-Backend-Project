@@ -4,7 +4,7 @@ const router = express.Router();
 const userController = require('../controller/user');
 const { createUserValidator } = require('../validators/user');
 const validateInput = require('../validators/validateInput');
-
+const { checkAuth } = require('../middleware/auth');
 router.post(
     '/create',
     createUserValidator,
@@ -14,22 +14,28 @@ router.post(
 
 router.get(
     '/getUsers',
+    checkAuth,
     userController.getUsers
 );
 
-module.exports = router;
+
 
 router.get(
     '/getUser/:id',
+    checkAuth,
     userController.getUserById
 );
 
 router.put(
     '/update/:id',
+    checkAuth,
     userController.updateUser
 );
 
 router.delete(
     '/delete/:id',
+    checkAuth,
     userController.deleteUser
 );
+
+module.exports = router;
